@@ -8,31 +8,62 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId((error, data)=> {
-    if (error){
-      callback(null, 0)
+  counter.getNextUniqueId((error, data)=> {
+    if (error) {
+      callback(null, 0);
     } else {
-      id = data;
-      
+      var path1 = path.join(exports.dataDir, data + '.txt')
+      fs.writeFile(path1, text, (error)=> {
+        if (error){
+          callback(null, 0)
+        } else {
+          items.id = data;
+          items.text = text;
+          callback(null, items)
+        }
+      });
     }
   });
-  callback(null, fs.writeFile());
 };
 
 exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
-  });
-  callback(null, data);
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  // callback(null, data);
+  fs.readdir(exports.dataDir, (error, files)=>{
+    if (error){
+      callback(null, [])
+    } else {
+      var array = [];
+      files.forEach((file)=>{
+        array.push({id:path.basename(file, '.txt'), text:path.basename(file, '.txt')})
+      })
+      callback(null, array)
+    }
+  })
 };
 
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  // var text = items[id];
+  // if (!text) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, { id, text });
+  // }
+  // console.log('this is id', id);
+  fs.readFile(exports.dataDir + `/${id}` + '.txt', (error, data) => {
+    console.log('exports.dataDir:', exports.dataDir + `/${id}` + '.txt')
+    console.log(data)
+    // var text = items[id];
+    if (error) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      // callback(null, {id, text})
+    }
+  })
+
+
 };
 
 exports.update = (id, text, callback) => {
